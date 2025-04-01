@@ -1,0 +1,2370 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>页面搭建平台原型</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/antd/5.15.1/reset.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dayjs/1.11.10/dayjs.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/antd/5.15.1/antd.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  
+  <!-- 添加Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#1890ff',
+            success: '#52c41a',
+            warning: '#faad14',
+            error: '#f5222d',
+            gray: {
+              100: '#f5f5f5',
+              200: '#f0f0f0',
+              300: '#d9d9d9',
+              400: '#bfbfbf',
+              500: '#8c8c8c',
+              600: '#595959',
+              700: '#434343',
+              800: '#262626',
+              900: '#1f1f1f',
+            }
+          },
+          boxShadow: {
+            card: '0 1px 2px -2px rgba(0, 0, 0, 0.16), 0 3px 6px 0 rgba(0, 0, 0, 0.12), 0 5px 12px 4px rgba(0, 0, 0, 0.09)',
+            sm: '0 1px 2px rgba(0,0,0,0.05)',
+            md: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+            lg: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+          }
+        }
+      }
+    }
+  </script>
+  
+  <style>
+    /* 仅保留必要的自定义样式，其他使用Tailwind类替代 */
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
+    }
+    .app-container {
+      min-height: 100vh;
+    }
+    .app-header {
+      background: #fff;
+      padding: 0 24px;
+      box-shadow: 0 1px 4px rgba(0,21,41,.08);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: fixed;
+      width: 100%;
+      z-index: 100;
+    }
+    .app-logo {
+      height: 48px;
+      display: flex;
+      align-items: center;
+      font-size: 18px;
+      font-weight: bold;
+    }
+    .app-content {
+      padding: 88px 24px 24px;
+      background: #f0f2f5;
+      min-height: 100vh;
+    }
+    .phone-frame {
+      width: 375px;
+      height: 667px;
+      margin: 0 auto;
+      border: 10px solid #333;
+      border-radius: 36px;
+      overflow: hidden;
+      position: relative;
+    }
+    .phone-content {
+      width: 100%;
+      height: 100%;
+      background: white;
+      overflow-y: auto;
+    }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+
+  <script type="text/babel" data-presets="env,react">
+    const { 
+      Layout, Menu, Breadcrumb, Typography, Tabs, Card, 
+      Form, Input, Select, Button, Table, Tag, Switch,
+      Upload, message, Dropdown, Space, Modal, Divider,
+      Descriptions, Slider, InputNumber, Radio
+    } = antd;
+    
+    const { Header, Content, Sider } = Layout;
+    const { Title, Text, Paragraph } = Typography;
+    const { Option } = Select;
+    
+    // 主应用组件
+    const App = () => {
+      const [activeTab, setActiveTab] = React.useState('1');
+      const [activeMenu, setActiveMenu] = React.useState('1');
+      const [breadcrumbItems, setBreadcrumbItems] = React.useState(['首页', '运营门户']);
+      
+      // 处理菜单点击事件
+      const handleMenuClick = (e) => {
+        setActiveMenu(e.key);
+        
+        // 根据点击的菜单项更新面包屑和内容
+        if (e.key === '1') {
+          setBreadcrumbItems(['首页', '运营门户']);
+          setActiveTab('1');
+        } else if (e.key === '2') {
+          setBreadcrumbItems(['首页', '用户前端预览']);
+          // 自动切换到页面预览选项卡
+          setActiveTab('6');
+        } else if (e.key === '3') {
+          setBreadcrumbItems(['首页', '系统管理']);
+          message.info('系统管理功能正在开发中');
+        }
+      };
+      
+      return (
+        <Layout className="app-container">
+          <Header className="app-header">
+            <div className="app-logo">页面搭建平台</div>
+            <Menu mode="horizontal" selectedKeys={[activeMenu]} onClick={handleMenuClick}>
+              <Menu.Item key="1">运营门户</Menu.Item>
+              <Menu.Item key="2">用户前端预览</Menu.Item>
+              <Menu.Item key="3">系统管理</Menu.Item>
+            </Menu>
+          </Header>
+          <Content className="app-content">
+            <Breadcrumb className="mb-4">
+              {breadcrumbItems.map((item, index) => (
+                <Breadcrumb.Item key={index}>{item}</Breadcrumb.Item>
+              ))}
+            </Breadcrumb>
+            
+            <Tabs activeKey={activeTab} onChange={setActiveTab} className="mb-6">
+              <Tabs.TabPane tab="标签模型管理" key="1">
+                <TagModelManagement />
+              </Tabs.TabPane>
+              <Tabs.TabPane tab="数据源管理" key="2">
+                <DataSourceManagement />
+              </Tabs.TabPane>
+              <Tabs.TabPane tab="组件配置" key="3">
+                <ComponentConfiguration />
+              </Tabs.TabPane>
+              <Tabs.TabPane tab="AI内容生成配置" key="4">
+                <AIContentConfiguration />
+              </Tabs.TabPane>
+              <Tabs.TabPane tab="页面组装" key="5">
+                <PageAssembly />
+              </Tabs.TabPane>
+              <Tabs.TabPane tab="页面预览" key="6">
+                <PagePreview />
+              </Tabs.TabPane>
+            </Tabs>
+          </Content>
+        </Layout>
+      );
+    };
+    
+    // 标签模型管理
+    const TagModelManagement = () => {
+      const [tagModels, setTagModels] = React.useState([
+        {
+          id: 1,
+          name: '用户信息',
+          description: '用户基本信息标签组',
+          tags: [
+            { name: '姓名', type: 'STRING', mappings: [{ dataSourceId: 'ds1', field: 'name' }, { dataSourceId: 'ds2', field: 'studentName' }] },
+            { name: '年龄', type: 'NUMBER', mappings: [{ dataSourceId: 'ds1', field: 'age' }, { dataSourceId: 'ds2', field: 'userAge' }] },
+            { name: '头像', type: 'IMAGE', mappings: [{ dataSourceId: 'ds1', field: 'avatarUrl' }] }
+          ]
+        },
+        {
+          id: 2,
+          name: '学习数据',
+          description: '用户学习相关数据标签组',
+          tags: [
+            { name: '课程名称', type: 'STRING', mappings: [{ dataSourceId: 'ds2', field: 'courseName' }] },
+            { name: '学习进度', type: 'NUMBER', mappings: [{ dataSourceId: 'ds2', field: 'progress' }] }
+          ]
+        }
+      ]);
+      
+      const [detailModalVisible, setDetailModalVisible] = React.useState(false);
+      const [editModalVisible, setEditModalVisible] = React.useState(false);
+      const [currentTagModel, setCurrentTagModel] = React.useState(null);
+      const [form] = Form.useForm();
+      
+      // 查看标签模型详情
+      const showTagModelDetail = (record) => {
+        setCurrentTagModel(record);
+        setDetailModalVisible(true);
+      };
+      
+      // 编辑标签模型
+      const showEditModal = (record) => {
+        setCurrentTagModel(record);
+        setEditModalVisible(true);
+        // 设置表单初始值
+        setTimeout(() => {
+          form.setFieldsValue({
+            name: record.name,
+            description: record.description
+          });
+        }, 0);
+      };
+      
+      // 处理编辑表单提交
+      const handleEditSubmit = () => {
+        form.validateFields().then(values => {
+          // 更新标签模型
+          const newTagModels = tagModels.map(item => 
+            item.id === currentTagModel.id ? { ...item, ...values } : item
+          );
+          setTagModels(newTagModels);
+          setEditModalVisible(false);
+          message.success('标签模型已更新');
+        });
+      };
+      
+      // 删除标签模型
+      const deleteTagModel = (id) => {
+        Modal.confirm({
+          title: '确认删除',
+          content: '确定要删除此标签模型吗？删除后无法恢复。',
+          okText: '确认',
+          cancelText: '取消',
+          onOk: () => {
+            const newTagModels = tagModels.filter(item => item.id !== id);
+            setTagModels(newTagModels);
+            message.success('标签模型已删除');
+          }
+        });
+      };
+      
+      // 添加新标签模型
+      const handleAddTagModel = () => {
+        setCurrentTagModel(null);
+        form.resetFields();
+        setEditModalVisible(true);
+      };
+      
+      // 创建或更新标签模型
+      const handleSaveTagModel = () => {
+        form.validateFields().then(values => {
+          if (currentTagModel) {
+            // 更新现有标签模型
+            const newTagModels = tagModels.map(item => 
+              item.id === currentTagModel.id ? { ...item, name: values.name, description: values.description } : item
+            );
+            setTagModels(newTagModels);
+            message.success('标签模型已更新');
+          } else {
+            // 创建新标签模型
+            const newTagModel = {
+              id: tagModels.length > 0 ? Math.max(...tagModels.map(item => item.id)) + 1 : 1,
+              name: values.name,
+              description: values.description,
+              tags: []
+            };
+            setTagModels([...tagModels, newTagModel]);
+            message.success('标签模型已创建');
+          }
+          setEditModalVisible(false);
+        });
+      };
+      
+      const columns = [
+        {
+          title: '标签模型名称',
+          dataIndex: 'name',
+          key: 'name',
+        },
+        {
+          title: '描述',
+          dataIndex: 'description',
+          key: 'description',
+        },
+        {
+          title: '标签数量',
+          key: 'tagCount',
+          render: (_, record) => record.tags.length
+        },
+        {
+          title: '操作',
+          key: 'action',
+          render: (_, record) => (
+            <Space size="middle">
+              <a onClick={() => showTagModelDetail(record)}>查看</a>
+              <a onClick={() => showEditModal(record)}>编辑</a>
+              <a onClick={() => deleteTagModel(record.id)}>删除</a>
+            </Space>
+          ),
+        },
+      ];
+      
+      return (
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="flex justify-between items-center mb-4">
+            <Title level={4}>标签模型管理</Title>
+            <Button type="primary" onClick={handleAddTagModel}>新建标签模型</Button>
+          </div>
+          <Paragraph>
+            标签模型用于定义业务数据属性，支持在不同数据源上定义灵活的字段映射。
+          </Paragraph>
+          <Table 
+            dataSource={tagModels} 
+            columns={columns} 
+            rowKey="id"
+            expandable={{
+              expandedRowRender: record => (
+                <div style={{ margin: 0 }}>
+                  <Table 
+                    columns={[
+                      { title: '标签名称', dataIndex: 'name', key: 'name' },
+                      { title: '数据类型', dataIndex: 'type', key: 'type' },
+                      { 
+                        title: '字段映射', 
+                        key: 'mappings',
+                        render: (_, record) => (
+                          <div>
+                            {record.mappings.map((mapping, index) => (
+                              <div key={index}>{mapping.dataSourceId}: {mapping.field}</div>
+                            ))}
+                          </div>
+                        )
+                      }
+                    ]}
+                    dataSource={record.tags}
+                    pagination={false}
+                  />
+                </div>
+              ),
+            }}
+          />
+          
+          {/* 详情模态框 */}
+          <Modal
+            title="标签模型详情"
+            open={detailModalVisible}
+            onCancel={() => setDetailModalVisible(false)}
+            footer={[
+              <Button key="close" onClick={() => setDetailModalVisible(false)}>
+                关闭
+              </Button>
+            ]}
+            width={800}
+          >
+            {currentTagModel && (
+              <React.Fragment>
+                <Descriptions title={currentTagModel.name} bordered>
+                  <Descriptions.Item label="ID" span={3}>{currentTagModel.id}</Descriptions.Item>
+                  <Descriptions.Item label="描述" span={3}>{currentTagModel.description}</Descriptions.Item>
+                  <Descriptions.Item label="标签数量" span={3}>{currentTagModel.tags.length}</Descriptions.Item>
+                </Descriptions>
+                
+                <Divider orientation="left">标签列表</Divider>
+                
+                <Table 
+                  columns={[
+                    { title: '标签名称', dataIndex: 'name', key: 'name' },
+                    { title: '数据类型', dataIndex: 'type', key: 'type' },
+                    { 
+                      title: '字段映射', 
+                      key: 'mappings',
+                      render: (_, record) => (
+                        <div>
+                          {record.mappings.map((mapping, index) => (
+                            <div key={index}>{mapping.dataSourceId}: {mapping.field}</div>
+                          ))}
+                        </div>
+                      )
+                    }
+                  ]}
+                  dataSource={currentTagModel.tags}
+                  pagination={false}
+                />
+              </React.Fragment>
+            )}
+          </Modal>
+          
+          {/* 编辑/创建模态框 */}
+          <Modal
+            title={currentTagModel ? "编辑标签模型" : "新建标签模型"}
+            open={editModalVisible}
+            onCancel={() => setEditModalVisible(false)}
+            onOk={handleSaveTagModel}
+            destroyOnClose={true}
+          >
+            <Form
+              form={form}
+              layout="vertical"
+            >
+              <Form.Item
+                name="name"
+                label="标签模型名称"
+                rules={[{ required: true, message: '请输入标签模型名称' }]}
+              >
+                <Input placeholder="请输入标签模型名称" />
+              </Form.Item>
+              <Form.Item
+                name="description"
+                label="描述"
+                rules={[{ required: true, message: '请输入标签模型描述' }]}
+              >
+                <Input.TextArea rows={4} placeholder="请输入标签模型描述" />
+              </Form.Item>
+            </Form>
+          </Modal>
+        </div>
+      );
+    };
+    
+    // 数据源管理
+    const DataSourceManagement = () => {
+      const [dataSources, setDataSources] = React.useState([
+        { id: 'ds1', name: '用户系统', type: 'MySQL', status: 'active', connectionString: 'jdbc:mysql://host:3306/users' },
+        { id: 'ds2', name: '学习平台', type: 'REST API', status: 'active', connectionString: 'https://api.learning.com/v1' }
+      ]);
+      
+      const [editModalVisible, setEditModalVisible] = React.useState(false);
+      const [currentDataSource, setCurrentDataSource] = React.useState(null);
+      const [form] = Form.useForm();
+      
+      // 打开编辑模态框
+      const showEditModal = (record) => {
+        setCurrentDataSource(record);
+        setEditModalVisible(true);
+        // 设置表单初始值
+        setTimeout(() => {
+          form.setFieldsValue(record);
+        }, 0);
+      };
+      
+      // 处理编辑表单提交
+      const handleEditSubmit = () => {
+        form.validateFields().then(values => {
+          // 更新数据源
+          const newDataSources = dataSources.map(item => 
+            item.id === currentDataSource.id ? { ...item, ...values } : item
+          );
+          setDataSources(newDataSources);
+          setEditModalVisible(false);
+          message.success('数据源已更新');
+        });
+      };
+      
+      // 测试连接
+      const testConnection = (record) => {
+        message.loading('正在测试连接...', 1.5).then(() => {
+          message.success('连接成功！');
+        });
+      };
+      
+      // 删除数据源
+      const deleteDataSource = (id) => {
+        Modal.confirm({
+          title: '确认删除',
+          content: '确定要删除此数据源吗？删除后无法恢复。',
+          okText: '确认',
+          cancelText: '取消',
+          onOk: () => {
+            const newDataSources = dataSources.filter(item => item.id !== id);
+            setDataSources(newDataSources);
+            message.success('数据源已删除');
+          }
+        });
+      };
+      
+      // 添加新数据源
+      const handleAddDataSource = () => {
+        setCurrentDataSource(null);
+        form.resetFields();
+        setEditModalVisible(true);
+      };
+      
+      // 创建或更新数据源
+      const handleSaveDataSource = () => {
+        form.validateFields().then(values => {
+          if (currentDataSource) {
+            // 更新现有数据源
+            const newDataSources = dataSources.map(item => 
+              item.id === currentDataSource.id ? { ...item, ...values } : item
+            );
+            setDataSources(newDataSources);
+            message.success('数据源已更新');
+          } else {
+            // 创建新数据源
+            const newDataSource = {
+              id: `ds${dataSources.length + 1}`,
+              status: 'active',
+              ...values
+            };
+            setDataSources([...dataSources, newDataSource]);
+            message.success('数据源已创建');
+          }
+          setEditModalVisible(false);
+        });
+      };
+      
+      const columns = [
+        {
+          title: '数据源ID',
+          dataIndex: 'id',
+          key: 'id',
+        },
+        {
+          title: '数据源名称',
+          dataIndex: 'name',
+          key: 'name',
+        },
+        {
+          title: '类型',
+          dataIndex: 'type',
+          key: 'type',
+        },
+        {
+          title: '状态',
+          key: 'status',
+          dataIndex: 'status',
+          render: status => (
+            <Tag color={status === 'active' ? 'green' : 'volcano'}>
+              {status === 'active' ? '已连接' : '未连接'}
+            </Tag>
+          ),
+        },
+        {
+          title: '操作',
+          key: 'action',
+          render: (_, record) => (
+            <Space size="middle">
+              <a onClick={() => testConnection(record)}>测试连接</a>
+              <a onClick={() => showEditModal(record)}>编辑</a>
+              <a onClick={() => deleteDataSource(record.id)}>删除</a>
+            </Space>
+          ),
+        },
+      ];
+      
+      return (
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="flex justify-between items-center mb-4">
+            <Title level={4}>数据源管理</Title>
+            <Button type="primary" onClick={handleAddDataSource}>新建数据源</Button>
+          </div>
+          <Paragraph>
+            数据源管理用于连接业务数据，支持为每个数据源上的标签定义特定的字段映射。
+          </Paragraph>
+          <Table 
+            dataSource={dataSources} 
+            columns={columns} 
+            rowKey="id" 
+          />
+          
+          <Modal
+            title={currentDataSource ? "编辑数据源" : "新建数据源"}
+            open={editModalVisible}
+            onCancel={() => setEditModalVisible(false)}
+            onOk={handleSaveDataSource}
+            destroyOnClose={true}
+          >
+            <Form
+              form={form}
+              layout="vertical"
+              initialValues={currentDataSource || {}}
+            >
+              <Form.Item
+                name="name"
+                label="数据源名称"
+                rules={[{ required: true, message: '请输入数据源名称' }]}
+              >
+                <Input placeholder="请输入数据源名称" />
+              </Form.Item>
+              <Form.Item
+                name="type"
+                label="数据源类型"
+                rules={[{ required: true, message: '请选择数据源类型' }]}
+              >
+                <Select placeholder="请选择数据源类型">
+                  <Option value="MySQL">MySQL</Option>
+                  <Option value="PostgreSQL">PostgreSQL</Option>
+                  <Option value="REST API">REST API</Option>
+                  <Option value="GraphQL">GraphQL</Option>
+                </Select>
+              </Form.Item>
+              <Form.Item
+                name="connectionString"
+                label="连接字符串"
+                rules={[{ required: true, message: '请输入连接字符串' }]}
+              >
+                <Input placeholder="请输入连接字符串" />
+              </Form.Item>
+            </Form>
+          </Modal>
+        </div>
+      );
+    };
+    
+    // 组件配置
+    const ComponentConfiguration = () => {
+      const [configModalVisible, setConfigModalVisible] = React.useState(false);
+      const [currentComponentIndex, setCurrentComponentIndex] = React.useState(null);
+      const [componentForm] = Form.useForm();
+      const [components, setComponents] = React.useState([
+        { id: 1, name: '个人信息组件', type: 'PROFILE', description: '显示用户个人信息和欢迎语' },
+        { id: 2, name: '照片相册', type: 'GALLERY', description: '显示照片集合，支持滑动查看' },
+        { id: 3, name: '留言板', type: 'MESSAGE_BOARD', description: '用户互动留言板' },
+        { id: 4, name: '视频播放', type: 'VIDEO', description: '视频播放组件' }
+      ]);
+      const [selectedPage, setSelectedPage] = React.useState({ 
+        components: [
+          { id: 1, name: '个人信息组件', type: 'PROFILE' },
+          { id: 2, name: '照片相册', type: 'GALLERY' },
+          { id: 3, name: '留言板', type: 'MESSAGE_BOARD' },
+          { id: 4, name: '视频播放', type: 'VIDEO' }
+        ]
+      });
+      
+      // 状态管理
+      const [formState, setFormState] = React.useState({
+        useAIContent: false,
+        aiContentType: 'text',
+        useVoice: false, 
+        voiceType: 'fixed',
+        fixedVoice: 'standard',
+        textPrompt: ''
+      });
+      
+      // 打开组件配置模态框
+      const editComponentConfig = (index) => {
+        setCurrentComponentIndex(index);
+        setConfigModalVisible(true);
+        
+        // 重置表单并设置初始值
+        componentForm.resetFields();
+        
+        // 设置默认值
+        const initialValues = {
+          useAIContent: false,
+          aiContentType: 'text',
+          useVoice: false,
+          voiceType: 'fixed',
+          fixedVoice: 'standard',
+          textPrompt: '',
+          tagMappings: []
+        };
+        
+        componentForm.setFieldsValue(initialValues);
+        setFormState(initialValues);
+      };
+      
+      // 处理表单值变化
+      const handleValuesChange = (changedValues, allValues) => {
+        console.log('表单值变化:', changedValues, allValues);
+        setFormState({ ...formState, ...changedValues });
+      };
+      
+      const columns = [
+        {
+          title: '组件名称',
+          dataIndex: 'name',
+          key: 'name',
+        },
+        {
+          title: '组件类型',
+          dataIndex: 'type',
+          key: 'type',
+        },
+        {
+          title: '组件描述',
+          dataIndex: 'description',
+          key: 'description',
+        },
+        {
+          title: '操作',
+          key: 'action',
+          render: (_, record, index) => (
+            <Space size="middle">
+              <a onClick={() => editComponentConfig(index)}>配置</a>
+            </Space>
+          ),
+        },
+      ];
+      
+      return (
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="flex justify-between items-center mb-4">
+            <Title level={4}>组件配置</Title>
+          </div>
+          <Paragraph>
+            配置各组件的属性和行为，包括AI内容生成、数据绑定等。
+          </Paragraph>
+          <Table 
+            dataSource={components} 
+            columns={columns} 
+            rowKey="id" 
+          />
+          
+          {/* 组件配置模态框 */}
+          <Modal
+            title={`配置组件：${currentComponentIndex !== null && selectedPage ? selectedPage.components[currentComponentIndex].name : ''}`}
+            open={configModalVisible}
+            onCancel={() => setConfigModalVisible(false)}
+            onOk={() => {
+              componentForm.validateFields().then(values => {
+                console.log('表单验证通过:', values);
+                setConfigModalVisible(false);
+                message.success('配置已保存');
+              }).catch(error => {
+                console.log('表单验证失败:', error);
+              });
+            }}
+            width={700}
+          >
+            {currentComponentIndex !== null && selectedPage && (
+              <Form 
+                form={componentForm} 
+                layout="vertical"
+                onValuesChange={handleValuesChange}
+              >
+                <Form.Item label="组件名称" name="componentName" initialValue={selectedPage.components[currentComponentIndex].name}>
+                  <Input />
+                </Form.Item>
+                <Form.Item label="绑定标签" name="dataTags">
+                  <Select placeholder="选择数据标签" mode="multiple">
+                    <Option value="姓名">姓名</Option>
+                    <Option value="年龄">年龄</Option>
+                    <Option value="头像">头像</Option>
+                    <Option value="课程名称">课程名称</Option>
+                    <Option value="学习进度">学习进度</Option>
+                  </Select>
+                </Form.Item>
+                
+                <Divider>组件特有属性</Divider>
+                
+                {selectedPage.components[currentComponentIndex].type === 'PROFILE' && (
+                  <React.Fragment>
+                    <Form.Item label="显示头像" name="displayAvatar" valuePropName="checked">
+                      <Switch defaultChecked />
+                    </Form.Item>
+                    <Form.Item label="显示个人简介" name="displayBio" valuePropName="checked">
+                      <Switch defaultChecked />
+                    </Form.Item>
+                  </React.Fragment>
+                )}
+                
+                {selectedPage.components[currentComponentIndex].type === 'GALLERY' && (
+                  <React.Fragment>
+                    <Form.Item label="每行显示数量" name="imagesPerRow">
+                      <Slider min={1} max={5} defaultValue={3} />
+                    </Form.Item>
+                    <Form.Item label="显示图片描述" name="showCaption" valuePropName="checked">
+                      <Switch defaultChecked />
+                    </Form.Item>
+                  </React.Fragment>
+                )}
+                
+                {selectedPage.components[currentComponentIndex].type === 'MESSAGE_BOARD' && (
+                  <React.Fragment>
+                    <Form.Item label="最大显示留言数" name="maxMessages">
+                      <InputNumber min={1} max={50} defaultValue={10} />
+                    </Form.Item>
+                    <Form.Item label="允许匿名留言" name="allowAnonymous" valuePropName="checked">
+                      <Switch />
+                    </Form.Item>
+                  </React.Fragment>
+                )}
+                
+                {selectedPage.components[currentComponentIndex].type === 'VIDEO' && (
+                  <React.Fragment>
+                    <Form.Item label="自动播放" name="autoPlay" valuePropName="checked">
+                      <Switch />
+                    </Form.Item>
+                    <Form.Item label="显示控制栏" name="controls" valuePropName="checked">
+                      <Switch defaultChecked />
+                    </Form.Item>
+                  </React.Fragment>
+                )}
+                
+                <Divider>AI内容生成配置</Divider>
+                
+                <Form.Item 
+                  name="useAIContent" 
+                  valuePropName="checked"
+                  label="启用AI内容生成"
+                >
+                  <Switch onChange={(checked) => setFormState({...formState, useAIContent: checked})} />
+                </Form.Item>
+                
+                <Form.Item
+                  name="aiContentType"
+                  label="AI内容类型"
+                  dependencies={['useAIContent']}
+                >
+                  <Select
+                    placeholder="请选择生成内容类型"
+                    disabled={!formState.useAIContent}
+                    onChange={(value) => setFormState({...formState, aiContentType: value})}
+                  >
+                    <Option value="text">文本</Option>
+                    <Option value="image">图片</Option>
+                    <Option value="video">视频</Option>
+                  </Select>
+                </Form.Item>
+                
+                <Form.Item
+                  name="aiTextConfig"
+                  label="文案生成配置"
+                  dependencies={['useAIContent', 'aiContentType']}
+                  style={{ 
+                    display: formState.useAIContent && 
+                    formState.aiContentType === 'text' ? 'block' : 'none' 
+                  }}
+                >
+                  <div style={{ background: '#f5f5f5', padding: '12px', borderRadius: '4px' }}>
+                    <Form.Item name="textPrompt" label="文案提示词" noStyle>
+                      <Input.TextArea 
+                        rows={3} 
+                        placeholder="请输入文案生成提示词，例如：生成一段个性化的欢迎语"
+                        onChange={(e) => setFormState({...formState, textPrompt: e.target.value})}
+                      />
+                    </Form.Item>
+                    
+                    <div style={{ marginTop: '12px' }}>
+                      <Form.Item 
+                        name="useVoice" 
+                        valuePropName="checked" 
+                        label="启用语音播报" 
+                        noStyle
+                      >
+                        <Switch onChange={(checked) => setFormState({...formState, useVoice: checked})} />
+                      </Form.Item>
+                      <span style={{ marginLeft: '8px' }}>启用语音播报</span>
+                    </div>
+                    
+                    <div style={{ 
+                      marginTop: '12px',
+                      display: formState.useVoice ? 'block' : 'none'
+                    }}>
+                      <Form.Item name="voiceType" label="语音类型" noStyle>
+                        <Radio.Group onChange={(e) => setFormState({...formState, voiceType: e.target.value})}>
+                          <Radio value="fixed">固定音色</Radio>
+                          <Radio value="auto">智能匹配音色</Radio>
+                        </Radio.Group>
+                      </Form.Item>
+                    </div>
+                    
+                    <div style={{ 
+                      marginTop: '12px',
+                      display: formState.useVoice && 
+                              formState.voiceType === 'fixed' ? 'block' : 'none'
+                    }}>
+                      <Form.Item name="fixedVoice" label="选择音色" noStyle>
+                        <Select 
+                          placeholder="请选择音色"
+                          onChange={(value) => setFormState({...formState, fixedVoice: value})}
+                        >
+                          <Option value="standard">标准普通话</Option>
+                          <Option value="female">女声</Option>
+                          <Option value="male">男声</Option>
+                          <Option value="child">儿童声</Option>
+                        </Select>
+                      </Form.Item>
+                    </div>
+                    
+                    <div style={{ 
+                      marginTop: '12px',
+                      display: formState.useVoice && 
+                              formState.voiceType === 'auto' ? 'block' : 'none'
+                    }}>
+                      <Form.Item name="autoVoiceConfig" label="智能匹配配置" noStyle>
+                        <Select mode="multiple" placeholder="选择匹配依据">
+                          <Option value="ip">用户IP地址（方言匹配）</Option>
+                          <Option value="age">用户年龄</Option>
+                          <Option value="gender">用户性别</Option>
+                          <Option value="interest">用户兴趣</Option>
+                        </Select>
+                      </Form.Item>
+                    </div>
+                  </div>
+                </Form.Item>
+                
+                <Form.Item
+                  name="aiTagMapping"
+                  label="数据标签映射"
+                  dependencies={['useAIContent']}
+                  style={{ display: formState.useAIContent ? 'block' : 'none' }}
+                >
+                  <div style={{ background: '#f5f5f5', padding: '12px', borderRadius: '4px' }}>
+                    <Paragraph>
+                      <Text type="secondary">将业务系统标签映射到AI内容生成，支持插入到提示词中</Text>
+                    </Paragraph>
+                    
+                    <Form.List name="tagMappings">
+                      {(fields, { add, remove }) => (
+                        <>
+                          {fields.map(({ key, name, ...restField }) => (
+                            <Space 
+                              key={key} 
+                              style={{ display: 'flex', marginBottom: 8 }} 
+                              align="baseline"
+                            >
+                              <Form.Item
+                                {...restField}
+                                name={[name, 'tag']}
+                                rules={[{ required: true, message: '请选择标签' }]}
+                              >
+                                <Select placeholder="选择标签" style={{ width: 150 }}>
+                                  <Option value="姓名">姓名</Option>
+                                  <Option value="年龄">年龄</Option>
+                                  <Option value="地区">地区</Option>
+                                  <Option value="兴趣">兴趣</Option>
+                                  <Option value="学习进度">学习进度</Option>
+                                </Select>
+                              </Form.Item>
+                              <Form.Item
+                                {...restField}
+                                name={[name, 'placeholder']}
+                                rules={[{ required: true, message: '请输入占位符' }]}
+                              >
+                                <Input placeholder="输入提示词中的占位符" style={{ width: 180 }} />
+                              </Form.Item>
+                              <Button 
+                                type="text"
+                                icon={<span role="img" aria-label="delete">🗑️</span>}
+                                onClick={() => remove(name)}
+                              />
+                            </Space>
+                          ))}
+                          <Form.Item>
+                            <Button 
+                              type="dashed" 
+                              onClick={() => add()} 
+                              block 
+                              icon={<span role="img" aria-label="plus">➕</span>}
+                            >
+                              添加标签映射
+                            </Button>
+                          </Form.Item>
+                        </>
+                      )}
+                    </Form.List>
+                  </div>
+                </Form.Item>
+                
+                <Form.Item
+                  name="aiPreview"
+                  label="AI内容预览"
+                  dependencies={['useAIContent', 'aiContentType', 'textPrompt', 'useVoice', 'voiceType', 'fixedVoice']}
+                  style={{ display: formState.useAIContent ? 'block' : 'none' }}
+                >
+                  <div className="border border-dashed border-gray-300 rounded-md p-4 bg-gray-50">
+                    <div className="mb-2">
+                      <Text strong>内容预览：</Text>
+                    </div>
+                    <div>
+                      {formState.aiContentType === 'text' && (
+                        <div>
+                          <div className="mb-2">
+                            <Text>生成的文案将显示在这里：</Text>
+                          </div>
+                          <div className="bg-blue-50 p-3 rounded-md">
+                            {formState.textPrompt ? (
+                              <Paragraph>
+                                根据您的提示词："{formState.textPrompt}"，
+                                将生成个性化文案，并插入标签内容。
+                              </Paragraph>
+                            ) : (
+                              <Text type="secondary">请填写文案提示词查看预览</Text>
+                            )}
+                            
+                            {formState.useVoice && (
+                              <div className="mt-2">
+                                <Tag color="blue">
+                                  {formState.voiceType === 'fixed' ? 
+                                    `将使用固定音色：${formState.fixedVoice || '请选择音色'}` : 
+                                    '将根据用户属性智能匹配适合的方言或音色'}
+                                </Tag>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {formState.aiContentType === 'image' && (
+                        <div className="text-center">
+                          <div className="w-[200px] h-[150px] bg-blue-50 flex items-center justify-center mx-auto rounded-md">
+                            <div className="text-blue-500 flex flex-col items-center">
+                              <svg className="w-10 h-10 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" 
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" 
+                                  d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                              </svg>
+                              <Text type="secondary">AI生成的图片将显示在这里</Text>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                      
+                      {formState.aiContentType === 'video' && (
+                        <div className="text-center">
+                          <div className="w-[300px] h-[180px] bg-blue-50 flex items-center justify-center mx-auto rounded-md">
+                            <div className="text-blue-500 flex flex-col items-center">
+                              <svg className="w-12 h-12 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" 
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" 
+                                  d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                              </svg>
+                              <Text type="secondary">AI生成的视频将显示在这里</Text>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </Form.Item>
+              </Form>
+            )}
+          </Modal>
+        </div>
+      );
+    };
+    
+    // 页面组装
+    const PageAssembly = () => {
+      const dragRef = React.useRef(null);
+      const [previewComponentVisible, setPreviewComponentVisible] = React.useState(false);
+      const [pages, setPages] = React.useState([
+        { id: 1, name: '生日祝福会场', components: [
+          { id: 1, name: '个人信息组件', type: 'PROFILE' },
+          { id: 2, name: '照片相册', type: 'GALLERY' },
+          { id: 3, name: '留言板', type: 'MESSAGE_BOARD' }
+        ], status: 'published' },
+        { id: 2, name: '毕业纪念会场', components: [
+          { id: 1, name: '个人信息组件', type: 'PROFILE' },
+          { id: 4, name: '视频播放', type: 'VIDEO' },
+          { id: 3, name: '留言板', type: 'MESSAGE_BOARD' }
+        ], status: 'draft' }
+      ]);
+      
+      const [selectedPage, setSelectedPage] = React.useState(null);
+      const [editNameModalVisible, setEditNameModalVisible] = React.useState(false);
+      const [previewModalVisible, setPreviewModalVisible] = React.useState(false);
+      const [componentConfigModalVisible, setComponentConfigModalVisible] = React.useState(false);
+      const [currentComponentIndex, setCurrentComponentIndex] = React.useState(null);
+      const [form] = Form.useForm();
+      const [componentForm] = Form.useForm();
+      
+      // 状态管理
+      const [formState, setFormState] = React.useState({
+        useAIContent: false,
+        aiContentType: 'text',
+        useVoice: false, 
+        voiceType: 'fixed',
+        fixedVoice: 'standard',
+        textPrompt: ''
+      });
+      
+      // 添加组件到页面
+      const addComponentToPage = (component) => {
+        if (!selectedPage) return;
+        
+        // 根据组件名称添加不同类型的组件
+        let componentData;
+        if (component === '个人信息组件') {
+          componentData = { id: Date.now(), name: '个人信息组件', type: 'PROFILE' };
+        } else if (component === '照片相册') {
+          componentData = { id: Date.now(), name: '照片相册', type: 'GALLERY' };
+        } else if (component === '留言板') {
+          componentData = { id: Date.now(), name: '留言板', type: 'MESSAGE_BOARD' };
+        } else if (component === '视频播放') {
+          componentData = { id: Date.now(), name: '视频播放', type: 'VIDEO' };
+        }
+        
+        const updatedPage = {
+          ...selectedPage,
+          components: [...selectedPage.components, componentData]
+        };
+        
+        updatePage(updatedPage);
+        message.success(`已添加组件: ${component}`);
+      };
+      
+      // 从页面移除组件
+      const removeComponentFromPage = (index) => {
+        if (!selectedPage) return;
+        
+        const updatedComponents = [...selectedPage.components];
+        updatedComponents.splice(index, 1);
+        
+        const updatedPage = {
+          ...selectedPage,
+          components: updatedComponents
+        };
+        
+        updatePage(updatedPage);
+      };
+      
+      // 上移组件
+      const moveComponentUp = (index) => {
+        if (!selectedPage || index === 0) return;
+        
+        const updatedComponents = [...selectedPage.components];
+        const temp = updatedComponents[index];
+        updatedComponents[index] = updatedComponents[index - 1];
+        updatedComponents[index - 1] = temp;
+        
+        const updatedPage = {
+          ...selectedPage,
+          components: updatedComponents
+        };
+        
+        updatePage(updatedPage);
+      };
+      
+      // 下移组件
+      const moveComponentDown = (index) => {
+        if (!selectedPage || index === selectedPage.components.length - 1) return;
+        
+        const updatedComponents = [...selectedPage.components];
+        const temp = updatedComponents[index];
+        updatedComponents[index] = updatedComponents[index + 1];
+        updatedComponents[index + 1] = temp;
+        
+        const updatedPage = {
+          ...selectedPage,
+          components: updatedComponents
+        };
+        
+        updatePage(updatedPage);
+      };
+      
+      // 更新页面
+      const updatePage = (updatedPage) => {
+        const updatedPages = pages.map(page => 
+          page.id === updatedPage.id ? updatedPage : page
+        );
+        
+        setPages(updatedPages);
+        setSelectedPage(updatedPage);
+      };
+      
+      // 新建页面
+      const createNewPage = () => {
+        setEditNameModalVisible(true);
+        form.resetFields();
+      };
+      
+      // 编辑页面名称
+      const editPageName = () => {
+        if (!selectedPage) return;
+        setEditNameModalVisible(true);
+        form.setFieldsValue({ name: selectedPage.name });
+      };
+      
+      // 保存页面名称
+      const handleSavePageName = () => {
+        form.validateFields().then(values => {
+          if (selectedPage) {
+            // 更新现有页面名称
+            const updatedPage = {
+              ...selectedPage,
+              name: values.name
+            };
+            updatePage(updatedPage);
+            setEditNameModalVisible(false);
+            message.success('页面名称已更新');
+          } else {
+            // 创建新页面
+            const newPage = {
+              id: pages.length > 0 ? Math.max(...pages.map(page => page.id)) + 1 : 1,
+              name: values.name,
+              components: [],
+              status: 'draft'
+            };
+            
+            setPages([...pages, newPage]);
+            setSelectedPage(newPage);
+            setEditNameModalVisible(false);
+            message.success('已创建新页面');
+          }
+        });
+      };
+      
+      // 编辑组件配置
+      const editComponentConfig = (index) => {
+        setCurrentComponentIndex(index);
+        setComponentConfigModalVisible(true);
+        
+        // 重置表单并设置初始值
+        componentForm.resetFields();
+        
+        // 设置默认值
+        const initialValues = {
+          useAIContent: false,
+          aiContentType: 'text',
+          useVoice: false,
+          voiceType: 'fixed',
+          fixedVoice: 'standard',
+          textPrompt: '',
+          tagMappings: []
+        };
+        
+        componentForm.setFieldsValue(initialValues);
+        setFormState(initialValues);
+      };
+      
+      // 处理表单值变化
+      const handleValuesChange = (changedValues, allValues) => {
+        console.log('表单值变化:', changedValues, allValues);
+        setFormState({ ...formState, ...changedValues });
+      };
+      
+      // 保存组件配置
+      const handleSaveComponentConfig = () => {
+        componentForm.validateFields().then(values => {
+          // 这里只是示例，实际应用中需要根据组件类型保存不同的配置项
+          message.success('组件配置已保存');
+          setComponentConfigModalVisible(false);
+        });
+      };
+      
+      // 保存页面
+      const savePage = () => {
+        if (!selectedPage) return;
+        
+        const updatedPage = {
+          ...selectedPage,
+          status: 'published'
+        };
+        
+        updatePage(updatedPage);
+        message.success('页面已保存并发布');
+      };
+      
+      // 预览页面
+      const previewPage = (page) => {
+        setSelectedPage(page);
+        setPreviewModalVisible(true);
+      };
+      
+      // 删除页面
+      const deletePage = (id) => {
+        Modal.confirm({
+          title: '确认删除',
+          content: '确定要删除此页面吗？删除后无法恢复。',
+          okText: '确认',
+          cancelText: '取消',
+          onOk: () => {
+            const newPages = pages.filter(page => page.id !== id);
+            setPages(newPages);
+            if (selectedPage && selectedPage.id === id) {
+              setSelectedPage(null);
+            }
+            message.success('页面已删除');
+          }
+        });
+      };
+      
+      // 生成组件配置表单
+      const renderComponentConfigForm = () => {
+        if (currentComponentIndex === null || !selectedPage) return null;
+        
+        const componentType = selectedPage.components[currentComponentIndex].type;
+        
+        switch(componentType) {
+          case 'PROFILE':
+            return (
+              <React.Fragment>
+                <Form.Item label="显示头像" name="displayAvatar" valuePropName="checked">
+                  <Switch defaultChecked />
+                </Form.Item>
+                <Form.Item label="显示个人简介" name="displayBio" valuePropName="checked">
+                  <Switch defaultChecked />
+                </Form.Item>
+              </React.Fragment>
+            );
+          case 'GALLERY':
+            return (
+              <React.Fragment>
+                <Form.Item label="每行显示数量" name="imagesPerRow">
+                  <Slider min={1} max={5} defaultValue={3} />
+                </Form.Item>
+                <Form.Item label="显示图片描述" name="showCaption" valuePropName="checked">
+                  <Switch defaultChecked />
+                </Form.Item>
+              </React.Fragment>
+            );
+          case 'MESSAGE_BOARD':
+            return (
+              <React.Fragment>
+                <Form.Item label="最大显示留言数" name="maxMessages">
+                  <InputNumber min={1} max={50} defaultValue={10} />
+                </Form.Item>
+                <Form.Item label="允许匿名留言" name="allowAnonymous" valuePropName="checked">
+                  <Switch />
+                </Form.Item>
+              </React.Fragment>
+            );
+          case 'VIDEO':
+            return (
+              <React.Fragment>
+                <Form.Item label="自动播放" name="autoPlay" valuePropName="checked">
+                  <Switch />
+                </Form.Item>
+                <Form.Item label="显示控制栏" name="controls" valuePropName="checked">
+                  <Switch defaultChecked />
+                </Form.Item>
+              </React.Fragment>
+            );
+          default:
+            return null;
+        }
+      };
+      
+      const columns = [
+        {
+          title: '页面名称',
+          dataIndex: 'name',
+          key: 'name',
+        },
+        {
+          title: '状态',
+          key: 'status',
+          dataIndex: 'status',
+          render: status => (
+            <Tag color={status === 'published' ? 'green' : 'blue'}>
+              {status === 'published' ? '已发布' : '草稿'}
+            </Tag>
+          ),
+        },
+        {
+          title: '操作',
+          key: 'action',
+          render: (_, record) => (
+            <Space size="middle">
+              <a onClick={() => setSelectedPage(record)}>编辑</a>
+              <a onClick={() => previewPage(record)}>预览</a>
+              <a onClick={() => deletePage(record.id)}>删除</a>
+            </Space>
+          ),
+        },
+      ];
+      
+      return (
+        <div className="bg-white rounded-lg shadow-md p-6">
+          {!selectedPage ? (
+            <React.Fragment>
+              <div className="flex justify-between items-center mb-4">
+                <Title level={4}>页面组装</Title>
+                <Button type="primary" onClick={createNewPage}>新建页面</Button>
+              </div>
+              <Paragraph>
+                页面组装用于将多个组件组合成完整的交互页面（会场）。
+              </Paragraph>
+              <Table 
+                dataSource={pages} 
+                columns={columns} 
+                rowKey="id" 
+              />
+            </React.Fragment>
+          ) : (
+            <React.Fragment>
+              <div className="flex justify-between items-center mb-4">
+                <div className="flex items-center gap-2">
+                  <Title level={4}>编辑页面：{selectedPage.name}</Title>
+                  <Button size="small" onClick={editPageName}>修改名称</Button>
+                </div>
+                <div className="flex gap-2">
+                  <Button onClick={() => previewPage(selectedPage)}>预览</Button>
+                  <Button type="primary" onClick={savePage}>保存并发布</Button>
+                  <Button onClick={() => setSelectedPage(null)}>返回列表</Button>
+                </div>
+              </div>
+              <div className="flex gap-6">
+                <div className="w-1/3">
+                  <Card title="可用组件">
+                    <div className="flex flex-col gap-2">
+                      <Card 
+                        size="small" 
+                        hoverable
+                        onClick={() => addComponentToPage('个人信息组件')}
+                        className="cursor-pointer hover:bg-blue-50 transition-colors"
+                      >
+                        <div className="flex items-center gap-2">
+                          <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" 
+                            xmlns="http://www.w3.org/2000/svg">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" 
+                              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                          </svg>
+                          个人信息组件
+                        </div>
+                      </Card>
+                      <Card 
+                        size="small" 
+                        hoverable
+                        onClick={() => addComponentToPage('照片相册')}
+                        className="cursor-pointer hover:bg-blue-50 transition-colors"
+                      >
+                        <div className="flex items-center gap-2">
+                          <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" 
+                            xmlns="http://www.w3.org/2000/svg">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" 
+                              d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                          </svg>
+                          照片相册
+                        </div>
+                      </Card>
+                      <Card 
+                        size="small" 
+                        hoverable
+                        onClick={() => addComponentToPage('留言板')}
+                        className="cursor-pointer hover:bg-blue-50 transition-colors"
+                      >
+                        <div className="flex items-center gap-2">
+                          <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" 
+                            xmlns="http://www.w3.org/2000/svg">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" 
+                              d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
+                          </svg>
+                          留言板
+                        </div>
+                      </Card>
+                      <Card 
+                        size="small" 
+                        hoverable
+                        onClick={() => addComponentToPage('视频播放')}
+                        className="cursor-pointer hover:bg-blue-50 transition-colors"
+                      >
+                        <div className="flex items-center gap-2">
+                          <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" 
+                            xmlns="http://www.w3.org/2000/svg">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" 
+                              d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                          </svg>
+                          视频播放
+                        </div>
+                      </Card>
+                    </div>
+                  </Card>
+                </div>
+                <div className="w-2/3">
+                  <Card title="页面布局">
+                    {selectedPage.components.length === 0 ? (
+                      <div className="text-center py-10 text-gray-500">
+                        从左侧添加组件到页面中
+                      </div>
+                    ) : (
+                      <div className="flex flex-col gap-4">
+                        {selectedPage.components.map((component, index) => (
+                          <Card 
+                            key={index} 
+                            size="small" 
+                            title={component.name}
+                            extra={
+                              <Space>
+                                <a onClick={() => editComponentConfig(index)}>配置</a>
+                                <a onClick={() => moveComponentUp(index)} className={index === 0 ? "text-gray-300 cursor-not-allowed" : ""}>上移</a>
+                                <a onClick={() => moveComponentDown(index)} className={index === selectedPage.components.length - 1 ? "text-gray-300 cursor-not-allowed" : ""}>下移</a>
+                                <a onClick={() => removeComponentFromPage(index)} className="text-red-500">移除</a>
+                              </Space>
+                            }
+                            className="border border-gray-200 hover:border-blue-300 transition-colors"
+                          >
+                            <div className="flex items-center gap-2">
+                              {component.type === 'PROFILE' && (
+                                <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" 
+                                  xmlns="http://www.w3.org/2000/svg">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" 
+                                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                </svg>
+                              )}
+                              {component.type === 'GALLERY' && (
+                                <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" 
+                                  xmlns="http://www.w3.org/2000/svg">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" 
+                                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                </svg>
+                              )}
+                              {component.type === 'MESSAGE_BOARD' && (
+                                <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" 
+                                  xmlns="http://www.w3.org/2000/svg">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" 
+                                    d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
+                                </svg>
+                              )}
+                              {component.type === 'VIDEO' && (
+                                <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" 
+                                  xmlns="http://www.w3.org/2000/svg">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" 
+                                    d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                </svg>
+                              )}
+                              {component.name} 组件
+                            </div>
+                          </Card>
+                        ))}
+                      </div>
+                    )}
+                  </Card>
+                </div>
+              </div>
+            </React.Fragment>
+          )}
+          
+          {/* 页面名称模态框（用于新建或编辑） */}
+          <Modal
+            title={selectedPage ? "编辑页面名称" : "新建页面"}
+            open={editNameModalVisible}
+            onCancel={() => setEditNameModalVisible(false)}
+            onOk={handleSavePageName}
+          >
+            <Form
+              form={form}
+              layout="vertical"
+            >
+              <Form.Item
+                name="name"
+                label="页面名称"
+                rules={[{ required: true, message: '请输入页面名称' }]}
+              >
+                <Input placeholder="请输入页面名称" />
+              </Form.Item>
+            </Form>
+          </Modal>
+          
+          {/* 预览模态框 */}
+          <Modal
+            title={`预览：${selectedPage?.name || ''}`}
+            open={previewModalVisible}
+            onCancel={() => setPreviewModalVisible(false)}
+            width={800}
+            footer={[
+              <Button key="close" onClick={() => setPreviewModalVisible(false)}>
+                关闭
+              </Button>
+            ]}
+          >
+            {selectedPage && (
+              <div style={{ textAlign: 'center' }}>
+                <div className="phone-frame">
+                  <div className="phone-content">
+                    <div className="p-4">
+                      <div className="text-center mb-4">
+                        <h1 className="text-2xl font-bold">{selectedPage.name}</h1>
+                      </div>
+                      
+                      {selectedPage.components.map((component, index) => {
+                        if (component.type === 'PROFILE') {
+                          return (
+                            <div key={index} className="bg-white rounded-lg shadow-md p-4 mb-4">
+                              <div className="flex items-center">
+                                <img 
+                                  src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&auto=format&fit=crop&w=120&h=120&q=80" 
+                                  alt="用户头像" 
+                                  className="w-20 h-20 rounded-full mr-4 object-cover"
+                                />
+                                <div>
+                                  <h2 className="text-xl font-semibold">王小明</h2>
+                                  <div className="mt-2 p-3 bg-blue-50 rounded-md text-blue-600 text-sm">
+                                    嗨，王小明！看到你对音乐很感兴趣，希望今天过得愉快！
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        } else if (component.type === 'GALLERY') {
+                          return (
+                            <div key={index} className="bg-white rounded-lg shadow-md p-4 mb-4">
+                              <h2 className="text-xl font-semibold mb-3">照片相册</h2>
+                              <div className="flex overflow-x-auto gap-2 pb-2">
+                                <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80" 
+                                  alt="风景照" className="min-w-[120px] h-[120px] rounded object-cover" />
+                                <img src="https://images.unsplash.com/photo-1510414842594-a61c69b5ae57?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80" 
+                                  alt="海滩照" className="min-w-[120px] h-[120px] rounded object-cover" />
+                                <img src="https://images.unsplash.com/photo-1505144808419-1957a94ca61e?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80" 
+                                  alt="日落照" className="min-w-[120px] h-[120px] rounded object-cover" />
+                                <img src="https://images.unsplash.com/photo-1528184039930-bd03972bd974?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80" 
+                                  alt="城市照" className="min-w-[120px] h-[120px] rounded object-cover" />
+                              </div>
+                            </div>
+                          );
+                        } else if (component.type === 'MESSAGE_BOARD') {
+                          return (
+                            <div key={index} className="bg-white rounded-lg shadow-md p-4 mb-4">
+                              <h2 className="text-xl font-semibold mb-3">留言板</h2>
+                              <div className="mb-4">
+                                <div className="p-3 bg-gray-50 rounded mb-2">
+                                  <span className="font-semibold">李华：</span>
+                                  <span>祝你生日快乐！</span>
+                                </div>
+                                <div className="p-3 bg-gray-50 rounded">
+                                  <span className="font-semibold">张三：</span>
+                                  <span>新的一年继续加油！</span>
+                                </div>
+                              </div>
+                              <div className="flex">
+                                <input type="text" placeholder="写下您的留言..." 
+                                  className="flex-1 border border-gray-300 rounded-l px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                                <button className="bg-blue-500 text-white px-4 py-2 rounded-r hover:bg-blue-600 transition-colors">
+                                  发送
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        } else if (component.type === 'VIDEO') {
+                          return (
+                            <div key={index} className="bg-white rounded-lg shadow-md p-4 mb-4">
+                              <h2 className="text-xl font-semibold mb-3">视频播放</h2>
+                              <div className="w-full h-[200px] bg-gray-100 rounded flex items-center justify-center">
+                                <div className="text-gray-500 flex flex-col items-center">
+                                  <svg className="w-12 h-12 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" 
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" 
+                                      d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path>
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" 
+                                      d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                  </svg>
+                                  点击播放视频
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        }
+                        return null;
+                      })}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </Modal>
+          
+          {/* 组件配置模态框 */}
+          <Modal
+            title="组件配置"
+            open={componentConfigModalVisible}
+            onCancel={() => setComponentConfigModalVisible(false)}
+            onOk={handleSaveComponentConfig}
+            width={600}
+          >
+            {currentComponentIndex !== null && selectedPage && (
+              <React.Fragment>
+                <Paragraph>正在配置: {selectedPage.components[currentComponentIndex].name}</Paragraph>
+                <Form
+                  form={componentForm}
+                  layout="vertical"
+                >
+                  {renderComponentConfigForm()}
+                  
+                  <Divider>AI内容生成配置</Divider>
+                  
+                  <Form.Item 
+                    name="useAIContent" 
+                    valuePropName="checked"
+                    label="启用AI内容生成"
+                  >
+                    <Switch onChange={(checked) => setFormState({...formState, useAIContent: checked})} />
+                  </Form.Item>
+                  
+                  <Form.Item
+                    name="aiContentType"
+                    label="AI内容类型"
+                    dependencies={['useAIContent']}
+                  >
+                    <Select
+                      placeholder="请选择生成内容类型"
+                      disabled={!formState.useAIContent}
+                      onChange={(value) => setFormState({...formState, aiContentType: value})}
+                    >
+                      <Option value="text">文本</Option>
+                      <Option value="image">图片</Option>
+                      <Option value="video">视频</Option>
+                    </Select>
+                  </Form.Item>
+                  
+                  <Form.Item
+                    name="aiTextConfig"
+                    label="文案生成配置"
+                    dependencies={['useAIContent', 'aiContentType']}
+                    style={{ 
+                      display: formState.useAIContent && 
+                      formState.aiContentType === 'text' ? 'block' : 'none' 
+                    }}
+                  >
+                    <div style={{ background: '#f5f5f5', padding: '12px', borderRadius: '4px' }}>
+                      <Form.Item name="textPrompt" label="文案提示词" noStyle>
+                        <Input.TextArea 
+                          rows={3} 
+                          placeholder="请输入文案生成提示词，例如：生成一段个性化的欢迎语"
+                          onChange={(e) => setFormState({...formState, textPrompt: e.target.value})}
+                        />
+                      </Form.Item>
+                      
+                      <div style={{ marginTop: '12px' }}>
+                        <Form.Item 
+                          name="useVoice" 
+                          valuePropName="checked" 
+                          label="启用语音播报" 
+                          noStyle
+                        >
+                          <Switch onChange={(checked) => setFormState({...formState, useVoice: checked})} />
+                        </Form.Item>
+                        <span style={{ marginLeft: '8px' }}>启用语音播报</span>
+                      </div>
+                      
+                      <div style={{ 
+                        marginTop: '12px',
+                        display: formState.useVoice ? 'block' : 'none'
+                      }}>
+                        <Form.Item name="voiceType" label="语音类型" noStyle>
+                          <Radio.Group onChange={(e) => setFormState({...formState, voiceType: e.target.value})}>
+                            <Radio value="fixed">固定音色</Radio>
+                            <Radio value="auto">智能匹配音色</Radio>
+                          </Radio.Group>
+                        </Form.Item>
+                      </div>
+                      
+                      <div style={{ 
+                        marginTop: '12px',
+                        display: formState.useVoice && 
+                                formState.voiceType === 'fixed' ? 'block' : 'none'
+                      }}>
+                        <Form.Item name="fixedVoice" label="选择音色" noStyle>
+                          <Select 
+                            placeholder="请选择音色"
+                            onChange={(value) => setFormState({...formState, fixedVoice: value})}
+                          >
+                            <Option value="standard">标准普通话</Option>
+                            <Option value="female">女声</Option>
+                            <Option value="male">男声</Option>
+                            <Option value="child">儿童声</Option>
+                          </Select>
+                        </Form.Item>
+                      </div>
+                      
+                      <div style={{ 
+                        marginTop: '12px',
+                        display: formState.useVoice && 
+                                formState.voiceType === 'auto' ? 'block' : 'none'
+                      }}>
+                        <Form.Item name="autoVoiceConfig" label="智能匹配配置" noStyle>
+                          <Select mode="multiple" placeholder="选择匹配依据">
+                            <Option value="ip">用户IP地址（方言匹配）</Option>
+                            <Option value="age">用户年龄</Option>
+                            <Option value="gender">用户性别</Option>
+                            <Option value="interest">用户兴趣</Option>
+                          </Select>
+                        </Form.Item>
+                      </div>
+                    </div>
+                  </Form.Item>
+                  
+                  <Form.Item
+                    name="aiTagMapping"
+                    label="数据标签映射"
+                    dependencies={['useAIContent']}
+                    style={{ display: formState.useAIContent ? 'block' : 'none' }}
+                  >
+                    <div style={{ background: '#f5f5f5', padding: '12px', borderRadius: '4px' }}>
+                      <Paragraph>
+                        <Text type="secondary">将业务系统标签映射到AI内容生成，支持插入到提示词中</Text>
+                      </Paragraph>
+                      
+                      <Form.List name="tagMappings">
+                        {(fields, { add, remove }) => (
+                          <>
+                            {fields.map(({ key, name, ...restField }) => (
+                              <Space 
+                                key={key} 
+                                style={{ display: 'flex', marginBottom: 8 }} 
+                                align="baseline"
+                              >
+                                <Form.Item
+                                  {...restField}
+                                  name={[name, 'tag']}
+                                  rules={[{ required: true, message: '请选择标签' }]}
+                                >
+                                  <Select placeholder="选择标签" style={{ width: 150 }}>
+                                    <Option value="姓名">姓名</Option>
+                                    <Option value="年龄">年龄</Option>
+                                    <Option value="地区">地区</Option>
+                                    <Option value="兴趣">兴趣</Option>
+                                    <Option value="学习进度">学习进度</Option>
+                                  </Select>
+                                </Form.Item>
+                                <Form.Item
+                                  {...restField}
+                                  name={[name, 'placeholder']}
+                                  rules={[{ required: true, message: '请输入占位符' }]}
+                                >
+                                  <Input placeholder="输入提示词中的占位符" style={{ width: 180 }} />
+                                </Form.Item>
+                                <Button 
+                                  type="text"
+                                  icon={<span role="img" aria-label="delete">🗑️</span>}
+                                  onClick={() => remove(name)}
+                                />
+                              </Space>
+                            ))}
+                            <Form.Item>
+                              <Button 
+                                type="dashed" 
+                                onClick={() => add()} 
+                                block 
+                                icon={<span role="img" aria-label="plus">➕</span>}
+                              >
+                                添加标签映射
+                              </Button>
+                            </Form.Item>
+                          </>
+                        )}
+                      </Form.List>
+                    </div>
+                  </Form.Item>
+                  
+                  <Form.Item
+                    name="aiPreview"
+                    label="AI内容预览"
+                    dependencies={['useAIContent', 'aiContentType', 'textPrompt', 'useVoice', 'voiceType', 'fixedVoice']}
+                    style={{ display: formState.useAIContent ? 'block' : 'none' }}
+                  >
+                    <div className="border border-dashed border-gray-300 rounded-md p-4 bg-gray-50">
+                      <div className="mb-2">
+                        <Text strong>内容预览：</Text>
+                      </div>
+                      <div>
+                        {formState.aiContentType === 'text' && (
+                          <div>
+                            <div className="mb-2">
+                              <Text>生成的文案将显示在这里：</Text>
+                            </div>
+                            <div className="bg-blue-50 p-3 rounded-md">
+                              {formState.textPrompt ? (
+                                <Paragraph>
+                                  根据您的提示词："{formState.textPrompt}"，
+                                  将生成个性化文案，并插入标签内容。
+                                </Paragraph>
+                              ) : (
+                                <Text type="secondary">请填写文案提示词查看预览</Text>
+                              )}
+                              
+                              {formState.useVoice && (
+                                <div className="mt-2">
+                                  <Tag color="blue">
+                                    {formState.voiceType === 'fixed' ? 
+                                      `将使用固定音色：${formState.fixedVoice || '请选择音色'}` : 
+                                      '将根据用户属性智能匹配适合的方言或音色'}
+                                  </Tag>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                        
+                        {formState.aiContentType === 'image' && (
+                          <div className="text-center">
+                            <div className="w-[200px] h-[150px] bg-blue-50 flex items-center justify-center mx-auto rounded-md">
+                              <div className="text-blue-500 flex flex-col items-center">
+                                <svg className="w-10 h-10 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" 
+                                  xmlns="http://www.w3.org/2000/svg">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" 
+                                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                </svg>
+                                <Text type="secondary">AI生成的图片将显示在这里</Text>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                        
+                        {formState.aiContentType === 'video' && (
+                          <div className="text-center">
+                            <div className="w-[300px] h-[180px] bg-blue-50 flex items-center justify-center mx-auto rounded-md">
+                              <div className="text-blue-500 flex flex-col items-center">
+                                <svg className="w-12 h-12 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" 
+                                  xmlns="http://www.w3.org/2000/svg">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" 
+                                    d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                </svg>
+                                <Text type="secondary">AI生成的视频将显示在这里</Text>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </Form.Item>
+                </Form>
+              </React.Fragment>
+            )}
+          </Modal>
+        </div>
+      );
+    };
+    
+    // 页面预览
+    const PagePreview = () => {
+      const [pages, setPages] = React.useState([
+        { id: 1, name: '生日祝福会场', components: [
+          { id: 1, name: '个人信息组件', type: 'PROFILE' },
+          { id: 2, name: '照片相册', type: 'GALLERY' },
+          { id: 3, name: '留言板', type: 'MESSAGE_BOARD' }
+        ], status: 'published' },
+        { id: 2, name: '毕业纪念会场', components: [
+          { id: 1, name: '个人信息组件', type: 'PROFILE' },
+          { id: 4, name: '视频播放', type: 'VIDEO' },
+          { id: 3, name: '留言板', type: 'MESSAGE_BOARD' }
+        ], status: 'draft' }
+      ]);
+      
+      const [selectedPage, setSelectedPage] = React.useState(null);
+      const [previewVisible, setPreviewVisible] = React.useState(false);
+      
+      // 预览页面
+      const previewPage = (record) => {
+        setSelectedPage(record);
+        setPreviewVisible(true);
+      };
+      
+      const columns = [
+        {
+          title: '页面名称',
+          dataIndex: 'name',
+          key: 'name',
+        },
+        {
+          title: '状态',
+          key: 'status',
+          dataIndex: 'status',
+          render: status => (
+            <Tag color={status === 'published' ? 'green' : 'blue'}>
+              {status === 'published' ? '已发布' : '草稿'}
+            </Tag>
+          ),
+        },
+        {
+          title: '操作',
+          key: 'action',
+          render: (_, record) => (
+            <Space size="middle">
+              <a onClick={() => previewPage(record)}>预览</a>
+            </Space>
+          ),
+        },
+      ];
+      
+      return (
+        <div className="component-container">
+          <div className="flex justify-between items-center mb-4">
+            <Title level={4}>页面预览</Title>
+          </div>
+          <Paragraph>
+            预览配置好的页面，查看在用户端的呈现效果。
+          </Paragraph>
+          <Table 
+            dataSource={pages} 
+            columns={columns} 
+            rowKey="id" 
+          />
+          
+          <Modal
+            title={selectedPage ? `预览：${selectedPage.name}` : '页面预览'}
+            open={previewVisible}
+            onCancel={() => setPreviewVisible(false)}
+            width={800}
+            footer={[
+              <Button key="close" onClick={() => setPreviewVisible(false)}>
+                关闭
+              </Button>
+            ]}
+          >
+            {selectedPage && (
+              <div className="text-center">
+                <div className="phone-frame">
+                  <div className="phone-content">
+                    <div className="p-4">
+                      <div className="text-center mb-4">
+                        <h1 className="text-2xl font-bold">{selectedPage.name}</h1>
+                      </div>
+                      
+                      {selectedPage.components.map((component, index) => {
+                        if (component.type === 'PROFILE') {
+                          return (
+                            <div key={index} className="bg-white rounded-lg shadow-md p-4 mb-4">
+                              <div className="flex items-center">
+                                <img 
+                                  src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&auto=format&fit=crop&w=120&h=120&q=80" 
+                                  alt="用户头像" 
+                                  className="w-20 h-20 rounded-full mr-4 object-cover"
+                                />
+                                <div>
+                                  <h2 className="text-xl font-semibold">王小明</h2>
+                                  <div className="mt-2 p-3 bg-blue-50 rounded-md text-blue-600 text-sm">
+                                    嗨，王小明！看到你对音乐很感兴趣，希望今天过得愉快！
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        } else if (component.type === 'GALLERY') {
+                          return (
+                            <div key={index} className="bg-white rounded-lg shadow-md p-4 mb-4">
+                              <h2 className="text-xl font-semibold mb-3">照片相册</h2>
+                              <div className="flex overflow-x-auto gap-2 pb-2">
+                                <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80" 
+                                  alt="风景照" className="min-w-[120px] h-[120px] rounded object-cover" />
+                                <img src="https://images.unsplash.com/photo-1510414842594-a61c69b5ae57?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80" 
+                                  alt="海滩照" className="min-w-[120px] h-[120px] rounded object-cover" />
+                                <img src="https://images.unsplash.com/photo-1505144808419-1957a94ca61e?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80" 
+                                  alt="日落照" className="min-w-[120px] h-[120px] rounded object-cover" />
+                                <img src="https://images.unsplash.com/photo-1528184039930-bd03972bd974?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80" 
+                                  alt="城市照" className="min-w-[120px] h-[120px] rounded object-cover" />
+                              </div>
+                            </div>
+                          );
+                        } else if (component.type === 'MESSAGE_BOARD') {
+                          return (
+                            <div key={index} className="bg-white rounded-lg shadow-md p-4 mb-4">
+                              <h2 className="text-xl font-semibold mb-3">留言板</h2>
+                              <div className="mb-4">
+                                <div className="p-3 bg-gray-50 rounded mb-2">
+                                  <span className="font-semibold">李华：</span>
+                                  <span>祝你生日快乐！</span>
+                                </div>
+                                <div className="p-3 bg-gray-50 rounded">
+                                  <span className="font-semibold">张三：</span>
+                                  <span>新的一年继续加油！</span>
+                                </div>
+                              </div>
+                              <div className="flex">
+                                <input type="text" placeholder="写下您的留言..." 
+                                  className="flex-1 border border-gray-300 rounded-l px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                                <button className="bg-blue-500 text-white px-4 py-2 rounded-r hover:bg-blue-600 transition-colors">
+                                  发送
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        } else if (component.type === 'VIDEO') {
+                          return (
+                            <div key={index} className="bg-white rounded-lg shadow-md p-4 mb-4">
+                              <h2 className="text-xl font-semibold mb-3">视频播放</h2>
+                              <div className="w-full h-[200px] bg-gray-100 rounded flex items-center justify-center">
+                                <div className="text-gray-500 flex flex-col items-center">
+                                  <svg className="w-12 h-12 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" 
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" 
+                                      d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path>
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" 
+                                      d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                  </svg>
+                                  点击播放视频
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        }
+                        return null;
+                      })}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </Modal>
+        </div>
+      );
+    };
+    
+    // AI内容生成配置
+    const AIContentConfiguration = () => {
+      const [aiConfigs, setAiConfigs] = React.useState([
+        { id: 1, name: '个性化问候语', type: 'TEXT', prompt: '为{{姓名}}创建一句个性化的问候语，考虑到他的{{兴趣}}' },
+        { id: 2, name: '头像生成', type: 'IMAGE', prompt: '为{{姓名}}创建一个卡通头像，风格为{{风格}}' },
+        { id: 3, name: '学习进度语音', type: 'AUDIO', prompt: '为{{姓名}}生成鼓励语音，提到他已经完成了{{学习进度}}%的课程' }
+      ]);
+      
+      const [editModalVisible, setEditModalVisible] = React.useState(false);
+      const [testModalVisible, setTestModalVisible] = React.useState(false);
+      const [currentConfig, setCurrentConfig] = React.useState(null);
+      const [form] = Form.useForm();
+      const [testResult, setTestResult] = React.useState(null);
+      
+      // 打开编辑模态框
+      const showEditModal = (record) => {
+        setCurrentConfig(record);
+        setEditModalVisible(true);
+        setTimeout(() => {
+          form.setFieldsValue(record);
+        }, 0);
+      };
+      
+      // 测试AI生成
+      const showTestModal = (record) => {
+        setCurrentConfig(record);
+        setTestModalVisible(true);
+        setTestResult(null);
+      };
+      
+      // 执行测试
+      const runTest = (values) => {
+        // 模拟测试结果
+        setTestResult('正在生成...');
+        
+        setTimeout(() => {
+          if (currentConfig.type === 'TEXT') {
+            setTestResult(`嗨，${values.姓名}！看到你对${values.兴趣}很感兴趣，希望今天过得愉快！`);
+          } else if (currentConfig.type === 'IMAGE') {
+            setTestResult('图片生成结果将显示在这里');
+          } else if (currentConfig.type === 'AUDIO') {
+            setTestResult(`语音生成结果：恭喜${values.姓名}已经完成了${values.学习进度}%的课程，继续加油！`);
+          }
+        }, 1500);
+      };
+      
+      // 删除配置
+      const deleteConfig = (id) => {
+        Modal.confirm({
+          title: '确认删除',
+          content: '确定要删除此AI内容生成配置吗？删除后无法恢复。',
+          okText: '确认',
+          cancelText: '取消',
+          onOk: () => {
+            const newConfigs = aiConfigs.filter(item => item.id !== id);
+            setAiConfigs(newConfigs);
+            message.success('配置已删除');
+          }
+        });
+      };
+      
+      // 添加新配置
+      const handleAddConfig = () => {
+        setCurrentConfig(null);
+        form.resetFields();
+        setEditModalVisible(true);
+      };
+      
+      // 保存配置
+      const handleSaveConfig = () => {
+        form.validateFields().then(values => {
+          if (currentConfig) {
+            // 更新现有配置
+            const newConfigs = aiConfigs.map(item => 
+              item.id === currentConfig.id ? { ...item, ...values } : item
+            );
+            setAiConfigs(newConfigs);
+            message.success('配置已更新');
+          } else {
+            // 创建新配置
+            const newConfig = {
+              id: aiConfigs.length > 0 ? Math.max(...aiConfigs.map(item => item.id)) + 1 : 1,
+              ...values
+            };
+            setAiConfigs([...aiConfigs, newConfig]);
+            message.success('配置已创建');
+          }
+          setEditModalVisible(false);
+        });
+      };
+      
+      const columns = [
+        {
+          title: '名称',
+          dataIndex: 'name',
+          key: 'name',
+        },
+        {
+          title: '类型',
+          dataIndex: 'type',
+          key: 'type',
+          render: type => {
+            const colorMap = {
+              'TEXT': 'blue',
+              'IMAGE': 'green',
+              'AUDIO': 'purple'
+            };
+            return <Tag color={colorMap[type]}>{type}</Tag>;
+          }
+        },
+        {
+          title: 'Prompt',
+          dataIndex: 'prompt',
+          key: 'prompt',
+          ellipsis: true
+        },
+        {
+          title: '操作',
+          key: 'action',
+          render: (_, record) => (
+            <Space size="middle">
+              <a onClick={() => showEditModal(record)}>编辑</a>
+              <a onClick={() => showTestModal(record)}>测试</a>
+              <a onClick={() => deleteConfig(record.id)}>删除</a>
+            </Space>
+          ),
+        },
+      ];
+      
+      // 从prompt中提取标签
+      const extractTags = (prompt) => {
+        const regex = /\{\{([^}]+)\}\}/g;
+        const tags = [];
+        let match;
+        
+        while ((match = regex.exec(prompt)) !== null) {
+          tags.push(match[1]);
+        }
+        
+        return tags;
+      };
+      
+      return (
+        <div className="component-container">
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
+            <Title level={4}>AI内容生成配置</Title>
+            <Button type="primary" onClick={handleAddConfig}>新建配置</Button>
+          </div>
+          <Paragraph>
+            AI内容生成配置用于设置生成个性化的文字、图片和音频内容的规则。
+          </Paragraph>
+          <Table 
+            dataSource={aiConfigs} 
+            columns={columns} 
+            rowKey="id" 
+          />
+          
+          {/* 编辑模态框 */}
+          <Modal
+            title={currentConfig ? "编辑AI内容生成配置" : "新建AI内容生成配置"}
+            open={editModalVisible}
+            onCancel={() => setEditModalVisible(false)}
+            onOk={handleSaveConfig}
+            destroyOnClose={true}
+          >
+            <Form
+              form={form}
+              layout="vertical"
+            >
+              <Form.Item
+                name="name"
+                label="配置名称"
+                rules={[{ required: true, message: '请输入配置名称' }]}
+              >
+                <Input placeholder="请输入配置名称" />
+              </Form.Item>
+              <Form.Item
+                name="type"
+                label="内容类型"
+                rules={[{ required: true, message: '请选择内容类型' }]}
+              >
+                <Select placeholder="请选择内容类型">
+                  <Option value="TEXT">文本</Option>
+                  <Option value="IMAGE">图片</Option>
+                  <Option value="AUDIO">音频</Option>
+                </Select>
+              </Form.Item>
+              <Form.Item
+                name="prompt"
+                label="Prompt模板"
+                rules={[{ required: true, message: '请输入Prompt模板' }]}
+                extra="使用 {{标签名}} 表示变量，例如: 为{{姓名}}创建一句问候语"
+              >
+                <Input.TextArea rows={4} placeholder="请输入Prompt模板" />
+              </Form.Item>
+            </Form>
+          </Modal>
+          
+          {/* 测试模态框 */}
+          <Modal
+            title={`测试AI内容生成: ${currentConfig?.name || ''}`}
+            open={testModalVisible}
+            onCancel={() => setTestModalVisible(false)}
+            footer={[
+              <Button key="close" onClick={() => setTestModalVisible(false)}>
+                关闭
+              </Button>
+            ]}
+            width={600}
+          >
+            {currentConfig && (
+              <React.Fragment>
+                <Paragraph>
+                  <Text strong>Prompt模板:</Text> {currentConfig.prompt}
+                </Paragraph>
+                
+                <Divider>测试参数</Divider>
+                
+                <Form
+                  onFinish={runTest}
+                  layout="vertical"
+                >
+                  {extractTags(currentConfig.prompt).map(tag => (
+                    <Form.Item
+                      key={tag}
+                      name={tag}
+                      label={tag}
+                      rules={[{ required: true, message: `请输入${tag}` }]}
+                    >
+                      <Input placeholder={`请输入${tag}`} />
+                    </Form.Item>
+                  ))}
+                  
+                  <Form.Item>
+                    <Button type="primary" htmlType="submit">
+                      生成
+                    </Button>
+                  </Form.Item>
+                </Form>
+                
+                {testResult && (
+                  <React.Fragment>
+                    <Divider>生成结果</Divider>
+                    {currentConfig.type === 'TEXT' && (
+                      <div className="bg-blue-50 p-4 rounded-md text-blue-800">
+                        {testResult}
+                      </div>
+                    )}
+                    {currentConfig.type === 'IMAGE' && (
+                      <div className="h-[200px] bg-gray-50 border border-dashed border-gray-300 rounded-md flex items-center justify-center">
+                        <div className="text-center">
+                          <svg className="w-12 h-12 mx-auto mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" 
+                            xmlns="http://www.w3.org/2000/svg">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" 
+                              d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                          </svg>
+                          <p className="text-gray-600">{testResult}</p>
+                        </div>
+                      </div>
+                    )}
+                    {currentConfig.type === 'AUDIO' && (
+                      <div className="bg-indigo-50 p-4 rounded-md text-indigo-800 flex items-center">
+                        <svg className="w-8 h-8 mr-3 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" 
+                          xmlns="http://www.w3.org/2000/svg">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" 
+                            d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"></path>
+                        </svg>
+                        <p>{testResult}</p>
+                      </div>
+                    )}
+                  </React.Fragment>
+                )}
+              </React.Fragment>
+            )}
+          </Modal>
+        </div>
+      );
+    };
+    
+    // 渲染应用
+    ReactDOM.render(<App />, document.getElementById('app'));
+  </script>
+</body>
+</html>
